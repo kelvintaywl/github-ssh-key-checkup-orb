@@ -8,6 +8,11 @@ commands:
       github-user-hostname:
         type: string
         default: git@github.com
+        description: user@hostname of GitHub server
+      openssh-client-version:
+        type: string
+        default: '7.2'
+        description: minimum version of OpenSSH client recommended
     description: Check the SSH key is still valid after Mar 15 2022, and look up OpenSSH client version
     steps:
       - run:
@@ -21,10 +26,17 @@ commands:
           command: |
             ./ssh-key-algo << parameters.github-user-hostname >>
       - run:
-          name: Check OpenSSH client
+          name: Make sure OpenSSH client version >= << parameters.openssh-client-version >>
           command: |
-            echo "Make sure OpenSSH client version is at least 7.2"
-            ssh -V
+            # Because ssh -V prints to stderr it seems
+            ssh_v=$(ssh -V 2>&1)
+            version=$(echo $ssh_v | sed 's/OpenSSH_//' | cut -d"p" -f1-1)
+            [ $(echo "${version} >= << parameters.openssh-client-version >>" |bc -l) ]
+          when: always
+      - run:
+          name: Cleanup
+          command: |
+            rm ssh-key-algo
           when: always
 
 examples:
@@ -33,9 +45,9 @@ examples:
     usage:
       version: 2.1
       orbs:
-        github-ssh-key: kelvintaywl/github-ssh-key-checkup@0.0.2
+        github-ssh-key: kelvintaywl/github-ssh-key-checkup@0.2
       jobs:
-        check-github-ssh-key-deprecation:
+        check:
           parameters:
             docker-image:
               type: string
@@ -48,7 +60,7 @@ examples:
       workflows:
         github-ssh-key-deprecation:
           jobs:
-            - check-github-ssh-key-deprecation:
+            - check:
                 matrix:
                   parameters:
                     docker-image:
