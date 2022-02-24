@@ -19,7 +19,7 @@ commands:
       - run:
           name: Check SSH key
           command: |
-            ssh-key-algo << parameters.github-user-hostname >>
+            ./ssh-key-algo << parameters.github-user-hostname >>
       - run:
           name: Check OpenSSH client
           command: |
@@ -28,21 +28,30 @@ commands:
 
 examples:
   basic:
-    description: Use the checkup command in your job before `checkout` step.
+    description: Use the checkup command in your job when the SSH keys are checked out.
     usage:
       version: 2.1
       orbs:
-        github-ssh-key: kelvintaywl/github-ssh-key-checkup@dev:alpha
+        github-ssh-key: kelvintaywl/github-ssh-key-checkup@0.0.2
+      jobs:
+        check-github-ssh-key-deprecation:
+          parameters:
+            docker-image:
+              type: string
+          docker:
+            - image: << parameters.docker-image >>
+          resource_class: small
+          steps:
+            - checkout
+            - github-ssh-key/checkup
       workflows:
-        main:
+        github-ssh-key-deprecation:
           jobs:
-            - nextgen_cimg_python_3.8:
-                docker:
-                  - image: cimg/python:3.8
-                steps:
-                  - github-ssh-key/checkup
-            - legacy_circleci_python_3.8:
-                docker:
-                  - image: circleci/python:3.8
-                steps:
-                  - github-ssh-key/checkup
+            - check-github-ssh-key-deprecation:
+                matrix:
+                  parameters:
+                    docker-image:
+                      - circleci/python:3.10
+                      - circleci/node:14
+                      - circleci/golang:1.14.6
+                      - circleci/php:8.0-fpm
