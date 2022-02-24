@@ -29,11 +29,13 @@ commands:
           name: Install bc
           command: |
             # required for floating-point arithmetic
-            command -v bc || sudo apt-get install -y bc
+            command -v bc || sudo apt-get update -y --no-install-recommends && sudo apt-get install -y bc
           when: always
       - run:
           name: Make sure OpenSSH client version >= << parameters.openssh-client-version >>
           command: |
+            ssh -V
+
             # Because ssh -V prints to stderr it seems
             ssh_v=$(ssh -V 2>&1)
             version=$(echo $ssh_v | sed 's/OpenSSH_//' | cut -d"p" -f1-1)
