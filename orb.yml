@@ -8,7 +8,7 @@ commands:
       github-user-hostname:
         type: string
         default: git@github.com
-    description: Greet someone with a "hello".
+    description: Check the SSH key is still valid after Mar 15 2022, and look up OpenSSH client version
     steps:
       - run:
           name: Download https://github.com/github/ssh-key-algo
@@ -24,7 +24,8 @@ commands:
           name: Check OpenSSH client
           command: |
             echo "Make sure OpenSSH client version is at least 7.2"
-            ssh -V             
+            ssh -V
+          when: always
 
 examples:
   basic:
