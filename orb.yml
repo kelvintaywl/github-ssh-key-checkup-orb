@@ -1,0 +1,48 @@
+version: 2.1
+
+description: Check if your CircleCI job is affected by the GitHub SSH key deprecation
+
+commands:
+  checkup:
+    parameters:
+      github-user-hostname:
+        type: string
+        default: git@github.com
+    description: Greet someone with a "hello".
+    steps:
+      - run:
+          name: Download https://github.com/github/ssh-key-algo
+          command: |
+            # assumes curl is available
+            curl https://raw.githubusercontent.com/github/ssh-key-algo/main/ssh-key-algo > ssh-key-algo
+            chmod +x ssh-key-algo
+      - run:
+          name: Check SSH key
+          command: |
+            ssh-key-algo << parameters.github-user-hostname >>
+      - run:
+          name: Check OpenSSH client
+          command: |
+            echo "Make sure OpenSSH client version is at least 7.2"
+            ssh -V             
+
+examples:
+  basic:
+    description: Use the checkup command in your job before `checkout` step.
+    usage:
+      version: 2.1
+      orbs:
+        github-ssh-key: kelvintaywl/github-ssh-key-checkup@dev:alpha
+      workflows:
+        main:
+          jobs:
+            - nextgen_cimg_python_3.8:
+                docker:
+                  - image: cimg/python:3.8
+                steps:
+                  - github-ssh-key/checkup
+            - legacy_circleci_python_3.8:
+                docker:
+                  - image: circleci/python:3.8
+                steps:
+                  - github-ssh-key/checkup
