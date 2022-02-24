@@ -2,6 +2,10 @@ version: 2.1
 
 description: Check if your CircleCI job is affected by the GitHub SSH key deprecation
 
+display:
+  home_url: "https://github.com/kelvintaywl/github-ssh-key-checkup-orb"
+  source_url: "https://github.com/kelvintaywl/github-ssh-key-checkup-orb"
+
 commands:
   checkup:
     parameters:
